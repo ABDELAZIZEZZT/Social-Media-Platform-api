@@ -20,7 +20,7 @@ class verifyToken
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $token=$request->token;
+            $token = $request->bearerToken();
             if($token){
                 $user=JWTAuth::parseToken()->Authenticate();
                 return $next($request);
