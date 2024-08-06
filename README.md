@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # blog-project
 the API documentation https://documenter.getpostman.com/view/37271356/2sA3rzHros
  
@@ -71,3 +72,7 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 >>>>>>> ecc5c15 (Initial commit)
+||||||| empty tree
+=======
+the api documentation https://documenter.getpostman.com/view/37271356/2sA3rzHros
+>>>>>>> origin/main
