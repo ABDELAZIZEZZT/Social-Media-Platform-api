@@ -1,0 +1,6 @@
+in this project we use api for 
+-registeration method (and use mail class for confirm email)
+-login 
+-logout
+-forget password
+-crud operation 
