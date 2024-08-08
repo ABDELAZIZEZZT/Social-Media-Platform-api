@@ -112,6 +112,19 @@ class AuthController extends Controller
             ], 400);
         }
     }
-
+    function update($request,$id){
+        $user = User::find($id);
+        $validator= Validator::make($request->all(),[
+            'first_name'=>'required|max:255',
+            'last_name'=>'required|max:255',
+            'email'=>'required|email|max:255|unique:users',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+        
+    }
 }
-
