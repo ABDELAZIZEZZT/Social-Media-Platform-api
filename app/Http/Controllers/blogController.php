@@ -54,17 +54,17 @@ class BlogController extends Controller
         return response()->json($blog, 201);
     }
 
-    // Show a single blog
+
     public function show($id)
     {
         $blog = Blog::find($id);
+        // return response()->json($blog);
         if (!$blog) {
             return response()->json(['error' => 'Blog not found'], 404);
         }
         return response()->json($blog, 200);
     }
 
-    // Update a blog
     public function update(Request $request,$id)
     {
         // return response()->json([$request->all()]);
@@ -103,7 +103,6 @@ class BlogController extends Controller
         return response()->json($blog, 200);
     }
 
-    // Delete a blog
     public function destroy(Request $request,$id)
     {
         $blog = Blog::find($id);

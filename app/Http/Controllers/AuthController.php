@@ -23,6 +23,8 @@ class AuthController extends Controller
             'first_name'=>'required|max:255',
             'last_name'=>'required|max:255',
             'email'=>'required|email|max:255|unique:users',
+            'job_title'=>'required|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'password'=>['required','confirmed',
                         Password::min('8')
                         ->letters()
@@ -31,16 +33,24 @@ class AuthController extends Controller
                         ->symbols(),
                     ],
         ]);
+
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'The given data was invalid.',
                 'errors' => $validator->errors(),
             ], 422);
         }
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('uploads', $fileName, 'public');
+        }
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
+            'job_tilte'=>$request->job_title,
+            'image'=>'/storage/' . $filePath,
             'password' => Hash::make($request->password),
         ]);
 
@@ -112,12 +122,14 @@ class AuthController extends Controller
             ], 400);
         }
     }
-    function update($request,$id){
+    function update(Request$request,$id){
         $user = User::find($id);
+        // return response()->json($request->all());
         $validator= Validator::make($request->all(),[
             'first_name'=>'required|max:255',
             'last_name'=>'required|max:255',
-            'email'=>'required|email|max:255|unique:users',
+            'job_title'=>'required|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -125,6 +137,17 @@ class AuthController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
-        
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('uploads', $fileName, 'public');
+            $user->image = '/storage/' . $filePath;
+        }
+        $user->first_name = $request->first_name;
+        $user->last_name = $request->last_name;
+        $user->job_title = $request->job_title;
+        $user->save();
+        return response()->json($user, 200);
+
     }
 }
