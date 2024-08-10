@@ -49,8 +49,8 @@ class AuthController extends Controller
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
-            'job_tilte'=>$request->job_title,
-            'image'=>'/storage/' . $filePath,
+            'job_title'=>$request->job_title,
+            // 'image'=>'/storage/' . $filePath,
             'password' => Hash::make($request->password),
         ]);
 
