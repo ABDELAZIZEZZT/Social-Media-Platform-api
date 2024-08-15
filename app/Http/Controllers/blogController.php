@@ -11,13 +11,14 @@ class BlogController extends Controller
 {
     public function index()
     {
+        // dd('222');
         $blogs = Blog::all();
         return response()->json($blogs, 200);
     }
 
     public function oneBlog($id)
     {
-        // dd($id);
+        dd($id);
         $blog = Blog::find($id);
         if (!$blog) {
             return response()->json(['error' => 'Blog not found'], 404);
@@ -57,10 +58,10 @@ class BlogController extends Controller
 
     public function show($id)
     {
-        $blog = Blog::find($id);
+        $blog = Blog::where('user_id',$id)->get();
         // return response()->json($blog);
-        if (!$blog) {
-            return response()->json(['error' => 'Blog not found'], 404);
+        if ($blog->count() == 0) {
+            return response()->json(['error' => 'no crated blogs for this user'], 404);
         }
         return response()->json($blog, 200);
     }
