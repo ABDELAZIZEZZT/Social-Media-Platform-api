@@ -34,10 +34,10 @@ Route::group(['middleware' => ['verifyToken']], function () {
 });
 
 Route::get('/blogs', [BlogController::class, 'index']);
-Route::get('/blogs/{id}', [BlogController::class,'show']);
 
 
 Route::middleware('auth:api')->group(function () {
+    Route::get('/myblogs', [BlogController::class,'show']);
     Route::post('/blogs', [BlogController::class, 'store']);
     Route::PUT('/blogs/update/{id}', [BlogController::class, 'update']);
     Route::delete('/blogs/{id}', [BlogController::class, 'destroy']);

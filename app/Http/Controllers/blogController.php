@@ -56,8 +56,9 @@ class BlogController extends Controller
     }
 
 
-    public function show($id)
+    public function show()
     {
+        $id=auth()->user()->id;
         $blog = Blog::where('user_id',$id)->get();
         // return response()->json($blog);
         if ($blog->count() == 0) {
