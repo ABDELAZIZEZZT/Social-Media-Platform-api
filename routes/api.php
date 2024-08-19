@@ -21,9 +21,9 @@ use App\Models\User;
 //     return $request->user();
 // });
 
-Route::get('/', function (Request $request) {
-    return response()->json(User::all());
-});
+// Route::get('/', function (Request $request) {
+//     return response()->json(User::all());
+// });
 
 Route::middleware(['guest'])->group(function () {
     Route::post('register',[AuthController::class,'registration']);
@@ -42,7 +42,6 @@ Route::middleware('auth:api')->group(function () {
     Route::PUT('/blogs/update/{id}', [BlogController::class, 'update']);
     Route::delete('/blogs/{id}', [BlogController::class, 'destroy']);
     Route::get('/oneblog/forupdate/{id}', [BlogController::class, 'oneBlog']);
-
 
     Route::get('/user', function (Request $request) { return $request->user();});
     Route::put('/user/{id}', [AuthController::class, 'update']);

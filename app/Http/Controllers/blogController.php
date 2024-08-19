@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Blog;
+use App\Models\User;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,18 +14,23 @@ class BlogController extends Controller
     public function index()
     {
         // dd('222');
-        $blogs = Blog::all();
+        $blogs = Blog::with('user')->get();
+    //     $blogs = Blog::paginate(5);
+    //    foreach ($blogs as $blog) {
+    //        $blog += User::find($blog->user_id)->first_name;
+    //    }
         return response()->json($blogs, 200);
     }
 
     public function oneBlog($id)
     {
-        dd($id);
-        $blog = Blog::find($id);
+        // dd($id);
+        $blog = Blog::with('user')->find($id);
         if (!$blog) {
             return response()->json(['error' => 'Blog not found'], 404);
         }
-        return response()->json($blog, 200);
+
+        return response()->json([$blog], 200);
     }
 
     public function store(Request $request)
@@ -59,12 +66,11 @@ class BlogController extends Controller
     public function show()
     {
         $id=auth()->user()->id;
-        $blog = Blog::where('user_id',$id)->get();
-        // return response()->json($blog);
-        if ($blog->count() == 0) {
+        $blogs = Blog::with('user')->where('user_id',$id)->get();
+        if ($blogs->count() == 0) {
             return response()->json(['error' => 'no crated blogs for this user'], 404);
         }
-        return response()->json($blog, 200);
+        return response()->json($blogs, 200);
     }
 
     public function update(Request $request,$id)
