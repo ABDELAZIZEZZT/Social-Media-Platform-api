@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\blogController;
+use App\Http\Controllers\FollowController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -25,6 +26,12 @@ use App\Models\User;
 //     return response()->json(User::all());
 // });
 
+Route::post('/forgetPassword', [AuthController::class, 'forgetPassword']);
+Route::post('/confirmToken', [AuthController::class, 'confirmToken'])->name('confirmToken');
+Route::post('/resetPassword', [AuthController::class, 'resetPassword'])->name('resetPassword');
+
+
+
 Route::middleware(['guest'])->group(function () {
     Route::post('register',[AuthController::class,'registration']);
     Route::post('login',[AuthController::class,'login'])->name('login');
@@ -45,6 +52,9 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/user', function (Request $request) { return $request->user();});
     Route::put('/user/{id}', [AuthController::class, 'update']);
+
+    Route::post("follow", [FollowController::class, 'follow']);
+    Route::post("unfollow", [FollowController::class, 'unfollow']);
 });
 
 Route::get('/', function () {

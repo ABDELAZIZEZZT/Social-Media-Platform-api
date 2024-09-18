@@ -3,14 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Carbon\Carbon;
+use Dotenv\Exception\ValidationException;
 // use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
+// use Str;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException as ValidationValidationException;
 
 use function Laravel\Prompts\password;
 
@@ -149,5 +156,89 @@ class AuthController extends Controller
         $user->save();
         return response()->json($user, 200);
 
+    }
+
+    function forgetPassword(Request $request){
+
+        $validator= Validator::make($request->all(),[
+            'email'=>'required|email|exists:users,email',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $token =  rand(100000, 999999);
+        $email = $request->email;
+        DB::table('password_resets')->insert([
+            'email' => $request->email,
+            'token' => $token,
+            'created_at' => Carbon::now()
+          ]);
+
+        Mail::send('mail.forgetPassword', ['token' => $token], function($message) use($request){
+            $message->to($request->email);
+            $message->subject('Reset Password');
+        });
+        return response()->json([
+            'message' => 'the token is sent to your email',
+            'redirect' => route('confirmToken', ['email' => $email])
+        ], 200);
+    }
+
+    function confirmToken(Request $request){
+        $validator= Validator::make($request->all(),[
+            'token'=>'required|alpha_num|size:6',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+            ], 404);
+        }
+        if(DB::table('password_resets')->where('email', $request->email)->where('token', $request->token)->exists()){
+            DB::table('password_resets')->where('email', $request->email)->delete();
+            return response()->json([
+                'message' => 'the token is correct and you can reset your password',
+                'redirect' => route('resetPassword', ['email' => $request->email])
+            ], 200);
+        }else{
+            return response()->json([
+                'message' => 'Token not found',
+            ], 404);
+        }
+    }
+    function resetPassword(Request $request){
+        $validator= Validator::make($request->all(),[
+            'email'=>'required|email|exists:users,email',
+            'password'=>['required','confirmed',
+            Password::min('8')
+            ->letters()
+            ->mixedCase()
+            ->numbers()
+            ->symbols(),
+        ],
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+        return response()->json([
+            'message' => 'Password reset successfully',
+
+        ], 200);
     }
 }

@@ -9,7 +9,7 @@ use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
-class BlogController extends Controller
+class blogController extends Controller
 {
     public function index()
     {
