@@ -44,21 +44,6 @@ A Blog and Social Media Application built using **Laravel-API**. This platform e
 
 ---
 
-## Installation
-
-### Prerequisites
-- PHP >= 8.1
-- Composer
-- Laravel 10.x
-- MySQL or PostgreSQL
-- Node.js & npm (for frontend assets if needed)
-
-### Setup Instructions
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/your-username/blog-publisher.git
-   cd blog-publisher
-
 # blog-project
 the API documentation https://documenter.getpostman.com/view/37271356/2sA3rzHros
  
