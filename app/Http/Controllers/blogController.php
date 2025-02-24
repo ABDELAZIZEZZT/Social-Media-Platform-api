@@ -2,16 +2,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+//use http\Env\Response;
 use Illuminate\Http\Request;
 use App\Models\Blog;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Psy\Util\Json;
 
-class blogController extends Controller
+class BlogController extends Controller
 {
-    public function index()
+    public function index():\Illuminate\Http\JsonResponse
     {
         // dd('222');
         $blogs = Blog::with('user')->get();
@@ -22,7 +24,7 @@ class blogController extends Controller
         return response()->json($blogs, 200);
     }
 
-    public function oneBlog($id)
+    public function oneBlog($id):\Illuminate\Http\JsonResponse
     {
         // dd($id);
         $blog = Blog::with('user')->find($id);
@@ -33,7 +35,7 @@ class blogController extends Controller
         return response()->json([$blog], 200);
     }
 
-    public function store(Request $request)
+    public function store(Request $request):\Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
@@ -47,23 +49,13 @@ class blogController extends Controller
 
         $blog = new Blog();
         $blog->user_id = $request->user()->id;
-        $blog->title = $request->title;
-        $blog->content = $request->content;
-
-        if ($request->file('image')) {
-            $file = $request->file('image');
-            $fileName = time() . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs('uploads', $fileName, 'public');
-            $blog->image_path = '/storage/' . $filePath;
-        }
-
-        $blog->save();
+        $this->extracted($request, $blog);
 
         return response()->json($blog, 201);
     }
 
 
-    public function show()
+    public function show():\Illuminate\Http\JsonResponse
     {
         $id=auth()->user()->id;
         $blogs = Blog::with('user')->where('user_id',$id)->get();
@@ -73,7 +65,7 @@ class blogController extends Controller
         return response()->json($blogs, 200);
     }
 
-    public function update(Request $request,$id)
+    public function update(Request $request,$id):\Illuminate\Http\JsonResponse
     {
         // return response()->json([$request->all()]);
 
@@ -96,22 +88,12 @@ class blogController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $blog->title = $request->title;
-        $blog->content = $request->content;
-
-        if ($request->file('image')) {
-            $file = $request->file('image');
-            $fileName = time() . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs('uploads', $fileName, 'public');
-            $blog->image_path = '/storage/' . $filePath;
-        }
-
-        $blog->save();
+        $this->extracted($request, $blog);
 
         return response()->json($blog, 200);
     }
 
-    public function destroy(Request $request,$id)
+    public function destroy(Request $request,$id):\Illuminate\Http\JsonResponse
     {
         $blog = Blog::find($id);
         if (!$blog) {
@@ -122,6 +104,26 @@ class blogController extends Controller
         }
         $blog->delete();
         return response()->json(['message' => 'Blog deleted successfully'], 200);
+    }
+
+    /**
+     * @param Request $request
+     * @param $blog
+     * @return void
+     */
+    public function extracted(Request $request, $blog): void
+    {
+        $blog->title = $request->input('title');
+        $blog->content = $request->input('content');
+
+        if ($request->file('image')) {
+            $file = $request->file('image');
+            $fileName = time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('uploads', $fileName, 'public');
+            $blog->image_path = '/storage/' . $filePath;
+        }
+
+        $blog->save();
     }
 }
 

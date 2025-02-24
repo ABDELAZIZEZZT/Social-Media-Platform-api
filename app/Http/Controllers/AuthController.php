@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegistrationRequest;
 use App\Models\User;
+use App\Services\AuthService;
 use Carbon\Carbon;
 use Dotenv\Exception\ValidationException;
 // use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,104 +18,123 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 // use Str;
+use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException as ValidationValidationException;
+use Laravel\Socialite\Facades\Socialite;
 
 use function Laravel\Prompts\password;
 
 class AuthController extends Controller
 {
     //
-    function registration(Request $request){
 
-        $validator= Validator::make($request->all(),[
-            'first_name'=>'required|max:255',
-            'last_name'=>'required|max:255',
-            'email'=>'required|email|max:255|unique:users',
-            'job_title'=>'required|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'password'=>['required','confirmed',
-                        Password::min('8')
-                        ->letters()
-                        ->mixedCase()
-                        ->numbers()
-                        ->symbols(),
-                    ],
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+    function registration(RegistrationRequest $request): JsonResponse
+    {
+        $data = $request->validated();
         if ($request->file('image')) {
             $file = $request->file('image');
             $fileName = time() . '.' . $file->getClientOriginalExtension();
             $filePath = $file->storeAs('uploads', $fileName, 'public');
+            $data['image'] = $filePath;
         }
-        $user = User::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'job_title'=>$request->job_title,
-            // 'image'=>'/storage/' . $filePath,
-            'password' => Hash::make($request->password),
-        ]);
+        $user = User::create([$data]);
 
-        $token = JWTAuth::fromUser($user);
-        if($user){
+        return response()->json([
+            'message' => 'User registered successfully',
+        ],201);
+
+    }
+    function registrationProvider($provider){
+        if($provider == 'twitter'){
+            return Socialite::driver($provider)->redirect();
+        }
+        return Socialite::driver($provider)->stateless()->redirect();
+    }
+    function redirectProvider($provider){
+        try {
+            if($provider == 'twitter'){
+                $socialUser = Socialite::driver($provider)->user();
+            }else{
+                $socialUser = Socialite::driver($provider)->stateless()->user();
+            }
+
+            $user = User::where('provider_id', $socialUser->getId())->first();
+            if (!$user) {
+                $user = User::create([
+                    'first_name' => $socialUser->getName(),
+                    'last_name' => $socialUser->getname(),
+                    'email' => $socialUser->getEmail(),
+                    'provider' => $provider,
+                    'provider_id' => $socialUser->getId(),
+                    'password' =>  encrypt('123456dummy'),
+                    'image'=>$socialUser->getAvatar(),
+                ]);
+            }
+            if(!$user->hasVerifiedEmail()){
+                // return redirect()->route('view/setPassword/{id}',['id'=>$user->id]);
+            }return redirect('/blogs');
+        } catch (\Exception $e) {
+            dd($e);
+//            return redirect('/register')->withErrors(['error' => 'Failed to register with ' . $provider . '. Please try again later.']);
+        }
+
+    }
+    function viewSetPassword($id){
+        return response()->json([
+            'message' => 'Please set your password by providing a new password and confirming it.',
+            'redirect' => route('setPassword', ['password','confirmPassword','id' => $id]),
+        ]);
+    }
+    function setPassword(Request $request,$id){
+
+            $validator= Validator::make($request->all(),[
+                'password'=>['required','confirmed',
+                            Password::min('8')
+                            ->letters()
+                            ->mixedCase()
+                            ->numbers()
+                            ->symbols(),
+                        ]
+            ]);
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+            $user = User::find($id);
+            // dd($user);
+            $token = JWTAuth::fromUser($user);
+            $user->password = Hash::make($request->password);
+            $user->email_verified_at = Carbon::now();
+            $user->save();
+            Auth::login($user);
             return response()->json([
-                'message' => 'User registered successfully',
+                'message' => 'Your Password Was Set Successfully',
                 'user' => $user,
                 'token' => $token,
             ]);
+
         }
-
-
-
-
     }
-    function login(Request $request){
-        $validator= Validator::make($request->all(),[
-            'email'=>'required|email',
-            'password'=>['required',
-                        Password::min('8')
-                        ->letters()
-                        ->mixedCase()
-                        ->numbers()
-                        ->symbols(),],
-        ]);
-        if ($validator->fails()) {
+    function Login(LoginRequest $request): JsonResponse
+    {
+        $credentials = $request->validated();
+        if (!Auth::attempt($credentials)) {
             return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $validator->errors(),
-            ]);
+                'message' => 'not correct credentials'
+            ],Response::HTTP_UNAUTHORIZED);
         }
-
-        $credentials = $request->only('email', 'password');
-        $token = JWTAuth::attempt($credentials);
-        try {
-            if (! $token) {
-                return response()->json([
-                    'message' => 'Invalid email or password',
-                ], 401);
-            }
-        } catch (JWTException $e) {
-            return response()->json([
-                'message' => 'Could not create token',
-            ]);
-        }
-
-        $user=Auth::user();
+        // $user = Auth::user();
+        $user = User::where('email', $credentials['email'])->first();
+        $token = $user->createToken($user->name . '-AuthToken')->plainTextToken;
         return response()->json([
-            'message' => 'Login successful',
             'user' => $user,
-            'token' => $token,
-        ]);
-
+            'token' => $token
+        ], Response::HTTP_OK);
     }
 
     function logout(Request $request){
@@ -241,4 +264,4 @@ class AuthController extends Controller
 
         ], 200);
     }
-}
+

@@ -33,6 +33,10 @@ Route::post('/resetPassword', [AuthController::class, 'resetPassword'])->name('r
 
 
 Route::middleware(['guest'])->group(function () {
+    Route::get('register/{provider}', [AuthController::class, 'registrationProvider']);
+    Route::get('register/{provider}/redirection', [AuthController::class, 'redirectProvider']);
+    Route::get('viewSetPassword/{id}', [AuthController::class, 'viewSetPassword'])->name('viewSetPassword');
+    Route::post('setPassword/{id}', [AuthController::class, 'setPassword'])->name('setPassword');
     Route::post('register',[AuthController::class,'registration']);
     Route::post('login',[AuthController::class,'login'])->name('login');
 });
@@ -40,10 +44,12 @@ Route::group(['middleware' => ['verifyToken']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
 });
 
-Route::get('/blogs', [BlogController::class, 'index']);
+Route::get('/blogs', [BlogController::class, 'index'])->name('blogs');
 
 
 Route::middleware('auth:api')->group(function () {
+
+
     Route::get('/myblogs', [BlogController::class,'show']);
     Route::post('/blogs', [BlogController::class, 'store']);
     Route::PUT('/blogs/update/{id}', [BlogController::class, 'update']);
