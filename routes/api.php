@@ -37,8 +37,8 @@ Route::middleware(['guest'])->group(function () {
     Route::get('register/{provider}/redirection', [AuthController::class, 'redirectProvider']);
     Route::get('viewSetPassword/{id}', [AuthController::class, 'viewSetPassword'])->name('viewSetPassword');
     Route::post('setPassword/{id}', [AuthController::class, 'setPassword'])->name('setPassword');
-    Route::post('register',[AuthController::class,'registration']);
-    Route::post('login',[AuthController::class,'login'])->name('login');
+    Route::post('register',[AuthController::class,'register']);
+    Route::post('login',[AuthController::class,'login'])->name('login')->middleware('guest');
 });
 Route::group(['middleware' => ['verifyToken']], function () {
     Route::post('logout', [AuthController::class, 'logout']);

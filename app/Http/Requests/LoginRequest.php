@@ -25,12 +25,14 @@ class LoginRequest extends FormRequest
         return [
             //
             'email'=>'required|email',
-            'password'=>['required',
-                Password::min('8')
-                    ->letters()
-                    ->mixedCase()
-                    ->numbers()
-                    ->symbols(),],
+            'password'=>'required|string'
+        ];
+    }
+    public function messages(){
+        return[
+            'email.required' => 'The email field is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'password.required' => 'The password field is required.',
         ];
     }
 }
