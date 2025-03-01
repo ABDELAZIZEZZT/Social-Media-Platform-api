@@ -38,17 +38,16 @@ Route::middleware(['guest'])->group(function () {
     Route::get('viewSetPassword/{id}', [AuthController::class, 'viewSetPassword'])->name('viewSetPassword');
     Route::post('setPassword/{id}', [AuthController::class, 'setPassword'])->name('setPassword');
     Route::post('register',[AuthController::class,'register']);
-    Route::post('login',[AuthController::class,'login'])->name('login')->middleware('guest');
 });
-Route::group(['middleware' => ['verifyToken']], function () {
-    Route::post('logout', [AuthController::class, 'logout']);
-});
+Route::post('login',[AuthController::class,'login'])->name('login');
+
 
 Route::get('/blogs', [BlogController::class, 'index'])->name('blogs');
 
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
+    Route::post('logout', [AuthController::class, 'logout']);
 
     Route::get('/myblogs', [BlogController::class,'show']);
     Route::post('/blogs', [BlogController::class, 'store']);

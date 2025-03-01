@@ -92,178 +92,142 @@ class AuthController extends Controller
 //         }
 
 //     }
-    function viewSetPassword($id){
-        return response()->json([
-            'message' => 'Please set your password by providing a new password and confirming it.',
-            'redirect' => route('setPassword', ['password','confirmPassword','id' => $id]),
-        ]);
-    }
-    function setPassword(Request $request,$id){
+    // function viewSetPassword($id){
+    //     return response()->json([
+    //         'message' => 'Please set your password by providing a new password and confirming it.',
+    //         'redirect' => route('setPassword', ['password','confirmPassword','id' => $id]),
+    //     ]);
+    // }
+    // function setPassword(Request $request,$id){
 
-            $validator= Validator::make($request->all(),[
-                'password'=>['required','confirmed',
-                            Password::min('8')
-                            ->letters()
-                            ->mixedCase()
-                            ->numbers()
-                            ->symbols(),
-                        ]
-            ]);
-            if ($validator->fails()) {
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-            $user = User::find($id);
-            // dd($user);
-            $token = JWTAuth::fromUser($user);
-            $user->password = Hash::make($request->password);
-            $user->email_verified_at = Carbon::now();
-            $user->save();
-            Auth::login($user);
-            return response()->json([
-                'message' => 'Your Password Was Set Successfully',
-                'user' => $user,
-                'token' => $token,
-            ]);
+    //         $validator= Validator::make($request->all(),[
+    //             'password'=>['required','confirmed',
+    //                         Password::min('8')
+    //                         ->letters()
+    //                         ->mixedCase()
+    //                         ->numbers()
+    //                         ->symbols(),
+    //                     ]
+    //         ]);
+    //         if ($validator->fails()) {
+    //             return response()->json([
+    //                 'message' => 'The given data was invalid.',
+    //                 'errors' => $validator->errors(),
+    //             ], 422);
+    //         }
+    //         $user = User::find($id);
+    //         // dd($user);
+    //         $token = JWTAuth::fromUser($user);
+    //         $user->password = Hash::make($request->password);
+    //         $user->email_verified_at = Carbon::now();
+    //         $user->save();
+    //         Auth::login($user);
+    //         return response()->json([
+    //             'message' => 'Your Password Was Set Successfully',
+    //             'user' => $user,
+    //             'token' => $token,
+    //         ]);
 
-        }
-    }
-    /**
-     * Login and return a JSON Web Token.
-     *
-     * @param LoginRequest $request
-     * @return JsonResponse
-     */
+    //     }
+    // }
+    // function logout(Request $request){
+    //     $request->user()->currentAccessToken()->delete();
 
+    //     return response()->json([
+    //         'message' => 'Logged out successfully'
+    //     ], 200);
+    // }
 
+    // function logoutAllDevices(Request $request): JsonResponse
+    // {
+    //     $request->user()->tokens()->delete();
 
-    function logout(Request $request){
-        // dd($request->all());
-        try {
-            // Invalidate the current token
-            JWTAuth::parseToken()->invalidate();
+    //     return response()->json([
+    //         'message' => 'Logged out from all devices'
+    //     ], 200);
+    // }
+    // function update(Request$request,$id){
+    //     $user = User::find($id);
+    //     // return response()->json($request->all());
+    //     $validator= Validator::make($request->all(),[
+    //         'first_name'=>'required|max:255',
+    //         'last_name'=>'required|max:255',
+    //         'job_title'=>'required|max:255',
+    //         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'message' => 'The given data was invalid.',
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+    //     if ($request->file('image')) {
+    //         $file = $request->file('image');
+    //         $fileName = time() . '.' . $file->getClientOriginalExtension();
+    //         $filePath = $file->storeAs('uploads', $fileName, 'public');
+    //         $user->image = '/storage/' . $filePath;
+    //     }
+    //     $user->first_name = $request->first_name;
+    //     $user->last_name = $request->last_name;
+    //     $user->job_title = $request->job_title;
+    //     $user->save();
+    //     return response()->json($user, 200);
 
-            return response()->json([
-                'message' => 'User logged out successfully',
-            ], 200);
-        } catch (JWTException $e) {
-            return response()->json([
-                'message' => 'Failed to logout, token invalid.',
-            ], 400);
-        }
-    }
-    function update(Request$request,$id){
-        $user = User::find($id);
-        // return response()->json($request->all());
-        $validator= Validator::make($request->all(),[
-            'first_name'=>'required|max:255',
-            'last_name'=>'required|max:255',
-            'job_title'=>'required|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-        if ($request->file('image')) {
-            $file = $request->file('image');
-            $fileName = time() . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs('uploads', $fileName, 'public');
-            $user->image = '/storage/' . $filePath;
-        }
-        $user->first_name = $request->first_name;
-        $user->last_name = $request->last_name;
-        $user->job_title = $request->job_title;
-        $user->save();
-        return response()->json($user, 200);
+    // }
 
-    }
+    // function forgetPassword(Request $request){
 
-    function forgetPassword(Request $request){
+    //     $validator= Validator::make($request->all(),[
+    //         'email'=>'required|email|exists:users,email',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'message' => 'The given data was invalid.',
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
 
-        $validator= Validator::make($request->all(),[
-            'email'=>'required|email|exists:users,email',
-        ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+    //     $token =  rand(100000, 999999);
+    //     $email = $request->email;
+    //     DB::table('password_resets')->insert([
+    //         'email' => $request->email,
+    //         'token' => $token,
+    //         'created_at' => Carbon::now()
+    //       ]);
 
-        $token =  rand(100000, 999999);
-        $email = $request->email;
-        DB::table('password_resets')->insert([
-            'email' => $request->email,
-            'token' => $token,
-            'created_at' => Carbon::now()
-          ]);
+    //     Mail::send('mail.forgetPassword', ['token' => $token], function($message) use($request){
+    //         $message->to($request->email);
+    //         $message->subject('Reset Password');
+    //     });
+    //     return response()->json([
+    //         'message' => 'the token is sent to your email',
+    //         'redirect' => route('confirmToken', ['email' => $email])
+    //     ], 200);
+    // }
 
-        Mail::send('mail.forgetPassword', ['token' => $token], function($message) use($request){
-            $message->to($request->email);
-            $message->subject('Reset Password');
-        });
-        return response()->json([
-            'message' => 'the token is sent to your email',
-            'redirect' => route('confirmToken', ['email' => $email])
-        ], 200);
-    }
+    // function resetPassword(Request $request){
+    //     $validator= Validator::make($request->all(),[
+    //         'email'=>'required|email|exists:users,email',
+    //         'password'=>['required','confirmed',
+    //         Password::min('8')
+    //         ->letters()
+    //         ->mixedCase()
+    //         ->numbers()
+    //         ->symbols(),
+    //     ],
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'message' => 'The given data was invalid.',
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+    //     $user = User::where('email', $request->email)->first();
+    //     $user->password = Hash::make($request->password);
+    //     $user->save();
+    //     return response()->json([
+    //         'message' => 'Password reset successfully',
 
-    function confirmToken(Request $request){
-        $validator= Validator::make($request->all(),[
-            'token'=>'required|alpha_num|size:6',
-        ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-        $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return response()->json([
-                'message' => 'User not found',
-            ], 404);
-        }
-        if(DB::table('password_resets')->where('email', $request->email)->where('token', $request->token)->exists()){
-            DB::table('password_resets')->where('email', $request->email)->delete();
-            return response()->json([
-                'message' => 'the token is correct and you can reset your password',
-                'redirect' => route('resetPassword', ['email' => $request->email])
-            ], 200);
-        }else{
-            return response()->json([
-                'message' => 'Token not found',
-            ], 404);
-        }
-    }
-    function resetPassword(Request $request){
-        $validator= Validator::make($request->all(),[
-            'email'=>'required|email|exists:users,email',
-            'password'=>['required','confirmed',
-            Password::min('8')
-            ->letters()
-            ->mixedCase()
-            ->numbers()
-            ->symbols(),
-        ],
-        ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-        $user = User::where('email', $request->email)->first();
-        $user->password = Hash::make($request->password);
-        $user->save();
-        return response()->json([
-            'message' => 'Password reset successfully',
-
-        ], 200);
-    }
+    //     ], 200);
+    // }
 
