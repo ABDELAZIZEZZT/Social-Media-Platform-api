@@ -79,6 +79,20 @@ class BlogController extends Controller
         return response()->json(['message' => 'Blog deleted successfully'], 200);
     }
 
+    public function search(Request $request):JsonResponse
+    {
+        $searchTerm = $request->input('search');
+        $blogs = Blog::query()
+        ->when($searchTerm, function ($q) use ($searchTerm) {
+            $q->where('title', 'LIKE', "%{$searchTerm}%")
+              ->orWhere('content', 'LIKE', "%{$searchTerm}%");
+        })
+        ->latest()
+        ->with('user')
+        ->paginate(10);
+        return response()->json($blogs, 200);
+    }
+
 }
 
 

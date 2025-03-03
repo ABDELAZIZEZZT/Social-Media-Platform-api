@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
 
     Route::resource('blogs', BlogController::class);
+    Route::Post('/blog/search', [BlogController::class, 'search']);
 
     Route::get('/user', function (Request $request) { return $request->user();});
     Route::put('/user/{id}', [AuthController::class, 'update']);
