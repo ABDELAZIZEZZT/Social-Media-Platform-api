@@ -51,17 +51,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::resource('blogs', BlogController::class);
 
-    // Route::get('/myblogs', [BlogController::class,'show']);
-    // Route::post('/blogs', [BlogController::class, 'store']);
-    // Route::PUT('/blogs/update/{id}', [BlogController::class, 'update']);
-    // Route::delete('/blogs/{id}', [BlogController::class, 'destroy']);
-    // Route::get('/oneblog/forupdate/{id}', [BlogController::class, 'oneBlog']);
-
     Route::get('/user', function (Request $request) { return $request->user();});
     Route::put('/user/{id}', [AuthController::class, 'update']);
 
     Route::post("follow", [FollowController::class, 'follow']);
     Route::post("unfollow", [FollowController::class, 'unfollow']);
+    Route::get("followers", [FollowController::class, 'followers']);
+    Route::get("following", [FollowController::class, 'following']);
 });
 
 Route::get('/', function () {
