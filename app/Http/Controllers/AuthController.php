@@ -30,10 +30,8 @@ class AuthController extends Controller
     public function register(RegistrationRequest $request): JsonResponse
     {
         $validatedData = $request->validated();
-
         $user = User::create($validatedData);
-
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('-AuthToken')->plainTextToken;
 
         return response()->json([
             'message' => 'User registered successfully.',
@@ -49,9 +47,10 @@ class AuthController extends Controller
                 'message' => 'not correct credentials'
             ],Response::HTTP_UNAUTHORIZED);
         }
-        // $user = Auth::user();
-        $user = User::where('email', $credentials['email'])->first();
-        $token = $user->createToken($user->name . '-AuthToken')->plainTextToken;
+
+        $user = Auth::user();
+        $token = $user->createToken( '-AuthToken')->plainTextToken;
+
         return response()->json([
             'user' => $user,
             'token' => $token

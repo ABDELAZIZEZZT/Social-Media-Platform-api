@@ -5,15 +5,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Posts\DeleteRequest;
 use App\Http\Requests\Posts\StoreRequest;
 use App\Http\Requests\Posts\UpdateRequest;
-//use http\Env\Response;
 use Illuminate\Http\Request;
 use App\Models\Blog;
-use App\Models\User;
-use Illuminate\Contracts\Pagination\Paginator;
-use Illuminate\Support\Facades\Validator;
 use \Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
-use Psy\Util\Json;
 
 class BlogController extends Controller
 {
@@ -48,7 +42,6 @@ class BlogController extends Controller
             $filePath = $file->storeAs('uploads', $fileName, 'public');
             $blog->image_path = '/storage/' . $filePath;
         }
-        $blog->user_id=auth()->user()->id;
         $blog->save();
 
         return response()->json($blog, 201);

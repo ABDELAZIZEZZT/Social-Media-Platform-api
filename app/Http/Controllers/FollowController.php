@@ -18,11 +18,10 @@ class FollowController extends Controller
             return response()->json(['message' => 'You cannot follow yourself']);
         }
         $userToFollow = User::find($user_id);
-        if(auth()->user()->isFollowing($userToFollow)) {
+        $user = auth()->user();
+        if($user->isFollowing($userToFollow)) {
             return response()->json(['message' => 'You are already following this user']);
         }
-
-        $user = auth()->user();
         $user->follow($userToFollow);
 
         return response()->json(['message' => 'User followed successfully!'],200);
