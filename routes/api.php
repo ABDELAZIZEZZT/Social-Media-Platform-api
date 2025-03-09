@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\blogController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FollowController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -59,6 +60,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post("unfollow", [FollowController::class, 'unfollow']);
     Route::get("followers", [FollowController::class, 'followers']);
     Route::get("following", [FollowController::class, 'following']);
+
+    Route::post('comment', [CommentController::class, 'store']);
+    Route::get('comments/{blog_id}', [CommentController::class, 'index']);
+    Route::delete('comment/{id}', [CommentController::class, 'destroy']);
+    Route::get('/comment/replies/{comment_id}', [CommentController::class, 'getReplies']);
 });
 
 Route::get('/', function () {
