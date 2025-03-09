@@ -28,6 +28,10 @@ class User extends Authenticatable implements JWTSubject
         }
     }
 
+    public function reactionsBlog(Blog $blog){
+       return $this->hasMany(Reaction::class, 'reactionable')->where('reactionable_id', $blog->id);
+    }
+
     public function unfollow(User $user) {
         Follow::where('user_id', auth()->id())->where('following_id', $user->id)->delete();
     }

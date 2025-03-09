@@ -5,7 +5,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Posts\DeleteRequest;
 use App\Http\Requests\Posts\StoreRequest;
 use App\Http\Requests\Posts\UpdateRequest;
+use App\Http\Requests\Posts\ReactionOnBlogRequest;
 use Illuminate\Http\Request;
+use App\Models\Reaction;
 use App\Models\Blog;
 use \Illuminate\Http\JsonResponse;
 
@@ -84,6 +86,28 @@ class BlogController extends Controller
         ->with('user')
         ->paginate(10);
         return response()->json($blogs, 200);
+    }
+
+    public function react(ReactionOnBlogRequest $request,$blog_id):JsonResponse
+    {
+        $data=$request->validated();
+        $blog = Blog::findOrFail($blog_id);
+        $reaction = Reaction::where('user_id', auth()->user()->id)->where('reactionable_id', $blog->id)->first();
+
+        if ($reaction) {
+            if($data['type'] == $reaction->type){
+                $reaction->delete();
+                return response()->json(['message' => 'Reaction deleted successfully'], 200);
+            }
+            $reaction->type = $data['type'];
+            $reaction->save();
+            return response()->json(['message' => 'Reaction updated successfully'], 200);
+        }
+        $data['user_id'] = auth()->user()->id;
+        $data['reactionable_id'] = $blog->id;
+        $data['reactionable_type'] = 'App\Models\Blog';
+        Reaction::create($data);
+        return response()->json(['message' => 'Blog liked successfully'], 200);
     }
 
 }

@@ -65,6 +65,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('comments/{blog_id}', [CommentController::class, 'index']);
     Route::delete('comment/{id}', [CommentController::class, 'destroy']);
     Route::get('/comment/replies/{comment_id}', [CommentController::class, 'getReplies']);
+
+    Route::post('react/blog/{blog_id}', [blogController::class, 'react']);
+    Route::post('react/comment/{comment_id}', [CommentController::class, 'react']);
 });
 
 Route::get('/', function () {

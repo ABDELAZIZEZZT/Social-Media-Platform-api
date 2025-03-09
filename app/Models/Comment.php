@@ -16,6 +16,10 @@ class Comment extends Model
         'parent_id',
     ];
 
+    public function reactions()
+    {
+        return $this->morphMany(Reaction::class, 'reactionable');
+    }
     public function user()
     {
         return $this->belongsTo(User::class);

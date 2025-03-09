@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Http\Requests\CommentRequest;
+use App\Http\Requests\ReactionOnCommentRequest;
 use Illuminate\Http\JsonResponse;
+use App\Models\Reaction;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
@@ -37,6 +39,25 @@ class CommentController extends Controller
     }
 
 
+ public function react(ReactionOnCommentRequest $request,$comment_id):JsonResponse
+    {
+        $data=$request->validated();
+        $comment = Comment::findOrFail($comment_id);
+        $reaction = Reaction::where('user_id', auth()->user()->id)->where('reactionable_id', $comment->id)->first();
 
-
+        if ($reaction) {
+            if($data['type'] == $reaction->type){
+                $reaction->delete();
+                return response()->json(['message' => 'Reaction deleted successfully'], 200);
+            }
+            $reaction->type = $data['type'];
+            $reaction->save();
+            return response()->json(['message' => 'Reaction updated successfully with '.$data['type']], 200);
+        }
+        $data['user_id'] = auth()->user()->id;
+        $data['reactionable_id'] = $comment->id;
+        $data['reactionable_type'] = 'App\Models\Comment';
+        Reaction::create($data);
+        return response()->json(['message' => 'Comment '.$data['type'] .' successfully'], 200);
+    }
 }
