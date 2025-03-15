@@ -92,7 +92,10 @@ class BlogController extends Controller
     {
         $data=$request->validated();
         $blog = Blog::findOrFail($blog_id);
-        $reaction = Reaction::where('user_id', auth()->user()->id)->where('reactionable_id', $blog->id)->first();
+        $reaction = Reaction::where('reactionable_type', 'App\Models\Blog')
+        ->where('reactionable_id', $blog->id)
+        ->where('user_id', auth()->user()->id)
+        ->first();
 
         if ($reaction) {
             if($data['type'] == $reaction->type){
@@ -106,7 +109,7 @@ class BlogController extends Controller
         $data['user_id'] = auth()->user()->id;
         $data['reactionable_id'] = $blog->id;
         $data['reactionable_type'] = 'App\Models\Blog';
-        Reaction::create($data);
+        Reaction::createOrUpdate($data);
         return response()->json(['message' => 'Blog liked successfully'], 200);
     }
 

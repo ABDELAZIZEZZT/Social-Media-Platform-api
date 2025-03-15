@@ -61,9 +61,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get("followers", [FollowController::class, 'followers']);
     Route::get("following", [FollowController::class, 'following']);
 
-    Route::post('comment', [CommentController::class, 'store']);
-    Route::get('comments/{blog_id}', [CommentController::class, 'index']);
-    Route::delete('comment/{id}', [CommentController::class, 'destroy']);
+    // Route::post('comment', [CommentController::class, 'store']);
+    // Route::get('comments/{blog_id}', [CommentController::class, 'index']);
+    // Route::delete('comment/{id}', [CommentController::class, 'destroy']);
+    // Route::put('comment/{id}', [CommentController::class, 'update']);
+    Route::resource('comments', CommentController::class);
+    Route::get('/comment/{blog_id}', [CommentController::class, 'getAllCommentsInBlog']);
     Route::get('/comment/replies/{comment_id}', [CommentController::class, 'getReplies']);
 
     Route::post('react/blog/{blog_id}', [blogController::class, 'react']);
