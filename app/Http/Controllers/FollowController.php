@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\FollowUnfollowRequest;
 use App\Models\Blog;
 use App\Models\User;
+use App\Notifications\NewFollowerNotification;
 use Illuminate\Http\JsonResponse;
 
 class FollowController extends Controller
@@ -23,6 +24,9 @@ class FollowController extends Controller
             return response()->json(['message' => 'You are already following this user']);
         }
         $user->follow($userToFollow);
+
+        //send notification to user who is followed
+        $userToFollow->notify(new NewFollowerNotification($user));
 
         return response()->json(['message' => 'User followed successfully!'],200);
 

@@ -8,6 +8,10 @@ use App\Http\Requests\ReactionOnCommentRequest;
 use App\Http\Requests\UpdateCommentRequest;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\DeleteCommentRequest;
+use App\Models\Blog;
+use App\Models\User;
+use App\Notifications\CommentNotification;
+use App\Notifications\ReactionOnCommentNotification;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Reaction;
 use Illuminate\Http\Request;
@@ -30,6 +34,12 @@ class CommentController extends Controller
         $data=$request->validated();
         $data['user_id'] = auth()->user()->id;
         $comment = Comment::create($data);
+
+        //send notification to blog's user with the user who is comment with content
+        $blog=Blog::findOrFail($data['blog_id']);
+        $user=User::findOrFail($data['user_id']);
+        $blog->user->notify(new CommentNotification($blog,$comment,$user));
+
         return response()->json($comment);
     }
 
@@ -75,7 +85,13 @@ class CommentController extends Controller
         $data['user_id'] = auth()->user()->id;
         $data['reactionable_id'] = $comment->id;
         $data['reactionable_type'] = 'App\Models\Comment';
-        Reaction::createOrUpdate($data);
+        Reaction::updateOrCreate($data);
+
+        //send notification to the comment's user who react on his comment with what?
+        $blog=Blog::findOrFail($comment->blog_id);
+        $user=User::findOrFail($data['user_id']);
+        $comment->user->notify(new ReactionOnCommentNotification($blog,$comment,$user,$data['type']));
+
         return response()->json(['message' => 'Comment '.$data['type'] .' successfully'], 200);
     }
 }

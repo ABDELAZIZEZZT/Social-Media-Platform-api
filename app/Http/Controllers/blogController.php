@@ -6,10 +6,13 @@ use App\Http\Requests\Posts\DeleteRequest;
 use App\Http\Requests\Posts\StoreRequest;
 use App\Http\Requests\Posts\UpdateRequest;
 use App\Http\Requests\Posts\ReactionOnBlogRequest;
+use App\Notifications\ReactionOnBlogNotification;
 use Illuminate\Http\Request;
 use App\Models\Reaction;
 use App\Models\Blog;
+use App\Models\User;
 use \Illuminate\Http\JsonResponse;
+
 
 class BlogController extends Controller
 {
@@ -109,7 +112,11 @@ class BlogController extends Controller
         $data['user_id'] = auth()->user()->id;
         $data['reactionable_id'] = $blog->id;
         $data['reactionable_type'] = 'App\Models\Blog';
-        Reaction::createOrUpdate($data);
+        Reaction::updateOrCreate($data);
+
+        //send notification to the blog's user who liked the blog
+        $user=User::findOrFail($data['user_id']);
+        $blog->user->notify(new ReactionOnBlogNotification($user,$blog,$data['type']));
         return response()->json(['message' => 'Blog liked successfully'], 200);
     }
 
