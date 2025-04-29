@@ -23,7 +23,6 @@ class ReactionOnBlogRequest extends FormRequest
     {
         return [
             'type' => 'required|string|in:like,dislike',
-            // 'blog_id' => 'required|integer|exists:blogs,id',
         ];
     }
     public function messages(): array
@@ -31,8 +30,6 @@ class ReactionOnBlogRequest extends FormRequest
         return [
             'type.required' => 'The reaction type is required.',
             'type.in' => 'The reaction type must be like or dislike.',
-            'blog_id.required' => 'The blog ID is required.',
-            'blog_id.exists' => 'The blog ID does not exist.',
         ];
     }
 }
