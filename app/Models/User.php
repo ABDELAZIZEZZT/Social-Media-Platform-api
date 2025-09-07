@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\CustomResetPassword;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable
@@ -46,6 +48,11 @@ class User extends Authenticatable
 
     public function followers() {
         return $this->hasManyThrough(User::class, Follow::class, 'following_id', 'id', 'id', 'user_id');
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new CustomResetPassword($token, $this->email));
     }
 
     /**

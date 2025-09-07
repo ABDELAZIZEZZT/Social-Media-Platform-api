@@ -7,6 +7,9 @@ use App\Http\Requests\RegistrationRequest;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -89,45 +92,47 @@ class AuthController extends Controller
     //         'redirect' => route('setPassword', ['password','confirmPassword','id' => $id]),
     //     ]);
     // }
-    // function setPassword(Request $request,$id){
+     function setPassword(Request $request,$id): JsonResponse
+     {
 
-    //         $validator= Validator::make($request->all(),[
-    //             'password'=>['required','confirmed',
-    //                         Password::min('8')
-    //                         ->letters()
-    //                         ->mixedCase()
-    //                         ->numbers()
-    //                         ->symbols(),
-    //                     ]
-    //         ]);
-    //         if ($validator->fails()) {
-    //             return response()->json([
-    //                 'message' => 'The given data was invalid.',
-    //                 'errors' => $validator->errors(),
-    //             ], 422);
-    //         }
-    //         $user = User::find($id);
-    //         // dd($user);
-    //         $token = JWTAuth::fromUser($user);
-    //         $user->password = Hash::make($request->password);
-    //         $user->email_verified_at = Carbon::now();
-    //         $user->save();
-    //         Auth::login($user);
-    //         return response()->json([
-    //             'message' => 'Your Password Was Set Successfully',
-    //             'user' => $user,
-    //             'token' => $token,
-    //         ]);
+             $validator= Validator::make($request->all(),[
+                 'password'=>['required','confirmed',
+                             Password::min('8')
+                             ->letters()
+                             ->mixedCase()
+                             ->numbers()
+                             ->symbols(),
+                         ]
+             ]);
+             if ($validator->fails()) {
+                 return response()->json([
+                     'message' => 'The given data was invalid.',
+                     'errors' => $validator->errors(),
+                 ], 422);
+             }
+             $user = User::find($id);
+             // dd($user);
+             $token = JWTAuth::fromUser($user);
+             $user->password = Hash::make($request->password);
+             $user->email_verified_at = Carbon::now();
+             $user->save();
+             Auth::login($user);
+             return response()->json([
+                 'message' => 'Your Password Was Set Successfully',
+                 'user' => $user,
+                 'token' => $token,
+             ]);
 
-    //     }
-    // }
-    // function logout(Request $request){
-    //     $request->user()->currentAccessToken()->delete();
 
-    //     return response()->json([
-    //         'message' => 'Logged out successfully'
-    //     ], 200);
-    // }
+     }
+     function logout(Request $request):jsonResponse
+     {
+         $request->user()->currentAccessToken()->delete();
+
+         return response()->json([
+             'message' => 'Logged out successfully'
+         ], 200);
+     }
 
     // function logoutAllDevices(Request $request): JsonResponse
     // {
@@ -166,60 +171,43 @@ class AuthController extends Controller
 
     // }
 
-    // function forgetPassword(Request $request){
+     function forgetPassword(Request $request): JsonResponse
+     {
 
-    //     $validator= Validator::make($request->all(),[
-    //         'email'=>'required|email|exists:users,email',
-    //     ]);
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'message' => 'The given data was invalid.',
-    //             'errors' => $validator->errors(),
-    //         ], 422);
-    //     }
+         $validator= Validator::make($request->all(),[
+             'email'=>'required|email|exists:users,email',
+         ]);
+         $status = Password::sendResetLink($request->only('email'));
 
-    //     $token =  rand(100000, 999999);
-    //     $email = $request->email;
-    //     DB::table('password_resets')->insert([
-    //         'email' => $request->email,
-    //         'token' => $token,
-    //         'created_at' => Carbon::now()
-    //       ]);
+         return $status === Password::RESET_LINK_SENT
+             ? response()->json(['message' => 'Reset token sent to email.'])
+             : response()->json(['message' => 'Failed to send reset link.'], 500);
+     }
 
-    //     Mail::send('mail.forgetPassword', ['token' => $token], function($message) use($request){
-    //         $message->to($request->email);
-    //         $message->subject('Reset Password');
-    //     });
-    //     return response()->json([
-    //         'message' => 'the token is sent to your email',
-    //         'redirect' => route('confirmToken', ['email' => $email])
-    //     ], 200);
-    // }
+     function resetPassword(Request $request)
+     {
+//         $validator= Validator::make($request->all(),[
+//             'email'=>'required|email|exists:users,email',
+//             'password'=>['required','confirmed',
+//             Password::min('8')
+//             ->letters()
+//             ->mixedCase()
+//             ->numbers()
+//             ->symbols(),
+//         ],
+//         ]);
+//         if ($validator->fails()) {
+//             return response()->json([
+//                 'message' => 'The given data was invalid.',
+//                 'errors' => $validator->errors(),
+//             ], 422);
+//         }
+         $user = User::where('email', $request->email)->first();
+         $user->password = Hash::make($request->password);
+         $user->save();
+         return response()->json([
+             'message' => 'Password reset successfully',
 
-    // function resetPassword(Request $request){
-    //     $validator= Validator::make($request->all(),[
-    //         'email'=>'required|email|exists:users,email',
-    //         'password'=>['required','confirmed',
-    //         Password::min('8')
-    //         ->letters()
-    //         ->mixedCase()
-    //         ->numbers()
-    //         ->symbols(),
-    //     ],
-    //     ]);
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'message' => 'The given data was invalid.',
-    //             'errors' => $validator->errors(),
-    //         ], 422);
-    //     }
-    //     $user = User::where('email', $request->email)->first();
-    //     $user->password = Hash::make($request->password);
-    //     $user->save();
-    //     return response()->json([
-    //         'message' => 'Password reset successfully',
-
-    //     ], 200);
-    // }
-
+         ], 200);
+     }
 }

@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Services\FollowService;
 use App\Http\Requests\FollowUnfollowRequest;
-use App\Models\Blog;
 use App\Models\User;
 use App\Notifications\NewFollowerNotification;
 use Illuminate\Http\JsonResponse;
@@ -12,42 +11,33 @@ use Illuminate\Http\JsonResponse;
 class FollowController extends Controller
 {
     //
+    protected FollowService $followService;
+
+    public function __construct(FollowService $followService)
+    {
+        $this->followService = $followService;
+    }
     public function follow(FollowUnfollowRequest $request): JsonResponse
      {
         $user_id = $request->input('user_id');
-        if($user_id == auth()->user()->id) {
-            return response()->json(['message' => 'You cannot follow yourself']);
-        }
         $userToFollow = User::find($user_id);
-        $user = auth()->user();
-        if($user->isFollowing($userToFollow)) {
-            return response()->json(['message' => 'You are already following this user']);
-        }
-        $user->follow($userToFollow);
+
+        $response = $this->followService->follow($userToFollow);
 
         //send notification to user who is followed
-        $userToFollow->notify(new NewFollowerNotification($user));
+        $userToFollow->notify(new NewFollowerNotification(Auth()->user()));
 
-        return response()->json(['message' => 'User followed successfully!'],200);
+        return $response;
 
     }
 
     public function unfollow(FollowUnfollowRequest $request): JsonResponse
     {
         $user_id = $request->input('user_id');
-        if($user_id == auth()->user()->id) {
-            return response()->json(['message' => 'You cannot unfollow yourself']);
-        }
 
         $userToUnfollow = User::find($user_id);
-        $user=auth()->user();
 
-        if(!$user->isFollowing($userToUnfollow)) {
-            return response()->json(['message' => 'You are not following this user']);
-        }
-        $user->unfollow($userToUnfollow);
-
-        return response()->json(['message' => 'User unfollowed successfully!'],200);
+        return  $this->followService->unfollow($userToUnfollow);
     }
 
     public function followers(): JsonResponse {
