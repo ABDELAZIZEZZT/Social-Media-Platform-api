@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\blogController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\FeedController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\ReactController;
 use Illuminate\Http\Request;
@@ -47,7 +48,9 @@ Route::post('login',[AuthController::class,'login'])->name('login');
 Route::get('/blogs', [BlogController::class, 'index'])->name('blogs');
 
 
+
 Route::middleware('auth:sanctum')->group(function () {
+Route::get('/home',[FeedController::class,'index']);
 
     Route::post('logout', [AuthController::class, 'logout']);
 
