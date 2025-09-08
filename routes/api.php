@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\blogController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\ReactController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -52,7 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::resource('blogs', BlogController::class);
     Route::get('blog/{blog}',[BlogController::class,'show']);
-    Route::post('react/blog/{blog}', [blogController::class, 'react']);
+    Route::post('react/blog/{blog}', [ReactController::class, 'react']);
     Route::Post('/blog/search', [BlogController::class, 'search']);
 
     Route::get('/user', function (Request $request) { return $request->user();});
