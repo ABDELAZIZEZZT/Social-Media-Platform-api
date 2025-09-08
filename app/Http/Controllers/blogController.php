@@ -69,14 +69,4 @@ class BlogController extends Controller
         return response()->json($blogs, 200);
     }
 
-    public function react(ReactionOnBlogRequest $request,Blog $blog):JsonResponse
-    {
-        $data = $request->validated();
-
-        $result = $this->blogService->handleReaction($data, $blog);
-
-        return response()->json(['message' => $result['message']], $result['status']);
-
-    }
-
 }
