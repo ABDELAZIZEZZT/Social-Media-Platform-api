@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegistrationRequest;
 use App\Models\User;
+use App\Services\AuthService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -22,33 +23,29 @@ class AuthController extends Controller
 {
     //
 
+    public function __construct(protected AuthService $authService){}
+
     public function register(RegistrationRequest $request): JsonResponse
     {
         $validatedData = $request->validated();
-        $user = User::create($validatedData);
-        $token = $user->createToken('-AuthToken')->plainTextToken;
-
+        $user =$this->authService->register($validatedData);
         return response()->json([
             'message' => 'User registered successfully.',
-            'token' => $token
+            'token' => $user['token'],
         ], Response::HTTP_CREATED);
     }
 
     function Login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
-        if (!Auth::attempt($credentials)) {
-            return response()->json([
-                'message' => 'not correct credentials'
-            ],Response::HTTP_UNAUTHORIZED);
+        $token = $this->authService->login($credentials);
+
+        if (!$token) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
-
-        $user = Auth::user();
-        $token = $user->createToken( '-AuthToken')->plainTextToken;
-
         return response()->json([
-            'user' => $user,
-            'token' => $token
+            'user' => Auth::user(),
+            'token' => $token,
         ], Response::HTTP_OK);
     }
 //     function registrationProvider($provider){
